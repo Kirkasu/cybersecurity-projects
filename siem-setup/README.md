@@ -15,10 +15,13 @@ sudo systemctl start wazuh-manager
 \\\
 
 ## Verification and Testing
-Show verification commands, screenshots, or captured outputs that prove functionality.
+Confirmed Splunk Web accessible at http://localhost:8000.
+Screenshots: 
+- [splunk_home.png](./screenshots/splunk_home_2025-10-23.png)
+- [server_settings.png](./screenshots/server_settings_2025-10-23.png)
 
 ## Analysis
-Summarize what was observed, detected, or learned. Include key log excerpts, event IDs, or patterns.
+The successful login and settings verification confirm the Splunk Enterprise instance is operational and ready for data ingestion.
 
 ## Troubleshooting Notes
 Document any issues encountered and how they were resolved.
