@@ -1,0 +1,5 @@
+﻿index=main source="WinEventLog:Security" (EventCode=4625 OR EventCode=4624) earliest=-1h
+| eval outcome=case(EventCode=4625,"fail",EventCode=4624,"success")
+| stats values(outcome) as outcomes, count by Account_Name, Workstation_Name, Source_Network_Address
+| where mvfind(outcomes,"success")>=0 AND count>3
+| sort - count

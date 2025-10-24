@@ -1,0 +1,3 @@
+﻿index=main source="WinEventLog:Security" EventCode=4625 earliest=-1h
+| stats count as failed_logons by Account_Name, Workstation_Name, Source_Network_Address
+| sort - failed_logons

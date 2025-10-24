@@ -1,0 +1,5 @@
+﻿index=main source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
+| search Image="*powershell.exe*"
+| eval Encoded=if(match(CommandLine,"-enc"),"Yes","No")
+| table _time Computer User Image CommandLine Encoded
+| sort - _time
