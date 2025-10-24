@@ -123,5 +123,65 @@ Built a Splunk Classic dashboard titled **“SOC Monitoring Dashboard”** to vi
 
 ---
 
-**Result:**  
-The Splunk dashboard now provides continuous visibility into failed logons, PowerShell activity, and network connections—forming the core of a basic SOC monitoring view.
+## Step 6 – Windows Server & Splunk Hardening
+
+Hardened the SIEM host and Splunk installation to reduce attack surface, enforce secure access, and enable auditing visibility.
+
+### 6.1 Windows Server Hardening
+- Disabled Guest account and renamed default Administrator.  
+  ```powershell
+  net user Guest /active:no
+  wmic useraccount where "name='Administrator'" rename "SecAdmin"
+  ```
+- Enforced password & lockout policy.  
+  ```powershell
+  net accounts /minpwlen:12 /maxpwage:45 /lockoutthreshold:3 /lockoutduration:15
+  ```
+- Enabled Windows Firewall and created inbound rule for Splunk Web (port 8000).  
+  ```powershell
+  Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+  New-NetFirewallRule -DisplayName "Allow Splunk Web" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow
+  ```
+- Enabled auditing for logon and network connection activity.  
+  ```powershell
+  AuditPol /set /category:"Logon/Logoff" /success:enable /failure:enable
+  AuditPol /set /category:"Account Logon" /success:enable /failure:enable
+  ```
+- Disabled legacy SMBv1 protocol.  
+  ```powershell
+  Disable-WindowsOptionalFeature -Online -FeatureName "SMB1Protocol" -NoRestart
+  ```
+- Configuration script: [config/hardening_baseline.ps1](./config/hardening_baseline.ps1)
+
+**Screenshots**
+- ![Users & Accounts](./screenshots/hardening_users_2025-10-24.png)
+- ![Firewall Rule](./screenshots/hardening_firewall_2025-10-24.png)
+- ![Audit Policy](./screenshots/hardening_auditpol_2025-10-24.png)
+
+---
+
+### 6.2 Splunk Hardening
+- Enabled HTTPS and changed Splunk Web to port 8443.  
+  - Config file: [config/web.conf](./config/web.conf)
+  ```ini
+  [settings]
+  httpport = 8443
+  enableSplunkWebSSL = true
+  ```
+- Created least-privilege roles: `analyst` (search-only) and `admin` (full).  
+  - Config file: [config/authorize.conf](./config/authorize.conf)
+- Restarted Splunk service to apply settings.  
+  ```powershell
+  net stop splunkd
+  net start splunkd
+  ```
+
+**Screenshots**
+- ![Splunk SSL Settings](./screenshots/splunk_ssl_settings_2025-10-24.png)
+- ![Splunk Analyst Role](./screenshots/splunk_role_analyst_2025-10-24.png)
+- ![Role Verification](./screenshots/splunk_role_verification_2025-10-24.png)
+
+---
+
+
+
