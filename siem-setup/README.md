@@ -258,11 +258,20 @@ Validated that Splunk alerts accurately detect realistic adversary behaviors thr
 
 ### 8.1 Simulated Scenarios
 
-| Scenario | MITRE Technique | Purpose | Example Command |
-|-----------|----------------|----------|-----------------|
-| **Failed Logon Brute Force** | T1110 – Brute Force | Test correlation of multiple failed logons followed by one success | `runas /user:SecAdmin cmd` → enter wrong password 5–6×, then correct once |
-| **Encoded PowerShell Execution** | T1059 – Command and Scripting Interpreter | Generate Sysmon Event ID 1 with `-enc` flag to validate PowerShell alert | `powershell.exe -enc VwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAB0AGUAcwB0AA==` |
-| **Outbound Connection Spike** | T1071 – Application Layer Protocol | Produce multiple Sysmon Event ID 3 network events to test outbound connection detection | `1..5 | % { Test-NetConnection -ComputerName 8.8.8.8 -Port 443 }` |
+**Failed Logon Brute Force (MITRE T1110 – Brute Force)**  
+Purpose: Test correlation of multiple failed logons followed by one success.  
+Example:  
+`runas /user:SecAdmin cmd` → enter wrong password 5–6×, then correct once  
+
+**Encoded PowerShell Execution (MITRE T1059 – Command and Scripting Interpreter)**  
+Purpose: Generate Sysmon Event ID 1 with `-enc` flag to validate PowerShell alert.  
+Example:  
+`powershell.exe -enc VwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAB0AGUAcwB0AA==`  
+
+**Outbound Connection Spike (MITRE T1071 – Application Layer Protocol)**  
+Purpose: Produce multiple Sysmon Event ID 3 network events to test outbound connection detection.  
+Example:  
+`1..5 | % { Test-NetConnection -ComputerName 8.8.8.8 -Port 443 }`
 
 ---
 
