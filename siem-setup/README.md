@@ -20,6 +20,8 @@ Deploy a functional Security Information and Event Management (SIEM) environment
 - ![Splunk Home](./screenshots/splunk_home_2025-10-23.png)
 - ![Server Settings](./screenshots/server_settings_2025-10-23.png)
 
+**Result:**
+Splunk Enterprise successfully installed, running as a service, and accessible via web interface.
 ---
 
 ## Step 2 – Enable Windows Event Log Ingestion
@@ -34,6 +36,8 @@ index=main sourcetype=WinEventLog:* earliest=-15m
 - ![Data Inputs](./screenshots/data_inputs_2025-10-23.png)
 - ![WinEventLog Search](./screenshots/wineventlog_search_2025-10-23.png)
 
+**Result:**
+Windows Security, System, and Application logs are being indexed into Splunk and verified via search.
 ---
 
 ## Step 3 – Install and Integrate Sysmon
@@ -46,6 +50,8 @@ index=main sourcetype=WinEventLog:* earliest=-15m
 - ![Sysmon in Event Viewer](./screenshots/sysmon_eventviewer_2025-10-23.png)
 - ![Sysmon Search in Splunk](./screenshots/sysmon_search_2025-10-23.png)
 
+**Result:**
+Sysmon telemetry (Event IDs 1 and 3) is successfully flowing into Splunk, confirming endpoint process and network visibility.
 ---
 
 ## Step 4 – Detection Searches and Reporting
@@ -99,6 +105,8 @@ index=main source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=3
 - [queries/sysmon_networkconnections.splunkql.txt](./queries/sysmon_networkconnections.splunkql.txt)
 - ![Sysmon Network Connections Search](./screenshots/sysmon_networkconnections_search.png)
 
+**Result:**
+Core detection queries for failed logons, encoded PowerShell, and Sysmon network events executed successfully and returned expected results.
 ---
 
 ## Step 5 – SOC Dashboard
@@ -121,6 +129,8 @@ Built a Splunk Classic dashboard titled **“SOC Monitoring Dashboard”** to vi
 - ![PowerShell Panel](./screenshots/dashboard_powershell_2025-10-24.png)
 - ![Network Connections Panel](./screenshots/dashboard_network_2025-10-24.png)
 
+**Result:**
+Custom Splunk dashboard visualizes detections in real time, confirming end-to-end data ingestion and analytic visibility.
 ---
 
 ## Step 6 – Windows Server & Splunk Hardening
@@ -181,7 +191,65 @@ Hardened the SIEM host and Splunk installation to reduce attack surface, enforce
 - ![Splunk Analyst Role](./screenshots/splunk_role_analyst_2025-10-24.png)
 - ![Role Verification](./screenshots/splunk_role_verification_2025-10-24.png)
 
+**Result:**
+Server baseline hardened with firewall, password policy, and auditing; Splunk instance secured with HTTPS and least-privilege roles.
 ---
+
+## Step 7 – Alerting and Correlation Rules
+
+Converted detections into scheduled alerts (every 5 minutes, 10–15 minute window).
+
+### 7.1 Failed Logon Brute-Force → Success
+SPL:
+```
+index=main source="WinEventLog:Security" (EventCode=4625 OR EventCode=4624) earliest=-10m
+| eval outcome=if(EventCode=4625,"fail","success")
+| stats values(outcome) as outcomes, count(eval(EventCode=4625)) as failures by Account_Name, Source_Network_Address, Workstation_Name
+| where failures>=5 AND mvfind(outcomes,"success")>=0
+| sort - failures
+```
+**Screenshots**
+- ![Definition](./screenshots/alert_failedlogon_definition.png)
+- ![Triggered](./screenshots/alert_failedlogon_triggered.png)
+
+---
+
+### 7.2 Encoded PowerShell Detected
+SPL:
+```
+index=main source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1 earliest=-10m
+| search Image="*\\powershell.exe"
+| where match(CommandLine,"(?i)\\s-enc(odedCommand)?\\b")
+| table _time Computer User Image CommandLine
+| sort - _time
+```
+**Screenshots**
+- ![Definition](./screenshots/alert_powershell_definition.png)
+- ![Triggered](./screenshots/alert_powershell_triggered.png)
+
+---
+
+### 7.3 Outbound Connection Spike (Sysmon 3)
+SPL:
+```
+index=main source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=3 earliest=-15m
+| stats count as connections by Image, DestinationIp
+| where connections>=2
+| sort - connections
+```
+**Screenshots**
+- ![Definition](./screenshots/alert_network_definition.png)
+- ![Triggered](./screenshots/alert_network_triggered.png)
+
+---
+
+### 7.4 Summary
+- All alerts confirmed firing in Triggered Alerts:  
+  ![Summary](./screenshots/alert_triggered_summary_2025-10-24.png)
+- Configuration export: [config/savedsearches.conf](./config/savedsearches.conf)
+
+**Result:**  
+Alerts now automatically detect failed logon correlation, encoded PowerShell commands, and outbound network spikes in near real time.
 
 
 
