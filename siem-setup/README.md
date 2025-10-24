@@ -3,9 +3,19 @@
 ## Objective
 Deploy a functional Security Information and Event Management (SIEM) environment using Splunk Enterprise on Windows Server 2022, integrate native Windows logs and Sysmon telemetry, and develop baseline detection searches for authentication failures, PowerShell activity, and network connections.
 
+---
+
+### 📄 Final Report  
+For the complete SOC Summary and analysis of this project, see:  
+➡️ [SOC Summary Report (PDF)](./reports/soc_summary_2025-10.pdf)
+
+This report provides an executive overview of the Splunk SIEM build, detections implemented, validation outcomes, and hardening results.
+
+---
+
 ## Topology or Environment
 - Host: Windows Server 2022 VM (SPLUNK-VM)
-- Tools: Splunk Enterprise 9.x, Sysmon v15.15
+- Tools: Splunk Enterprise 10.x, Sysmon v15.15
 - Data Sources: Windows Security, System, Application Event Logs; Sysmon Operational Log
 - Network: Bridged adapter; Splunk Web accessible from host via `http://<VM-IP>:8000`
 
