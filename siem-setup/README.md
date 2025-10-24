@@ -250,6 +250,51 @@ index=main source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=3
 
 **Result:**  
 Alerts now automatically detect failed logon correlation, encoded PowerShell commands, and outbound network spikes in near real time.
+---
 
+## Step 8 – Threat Simulation & Detection Validation
+
+Validated that Splunk alerts accurately detect realistic adversary behaviors through structured simulations mapped to MITRE ATT&CK techniques.
+
+### 8.1 Simulated Scenarios
+
+| Scenario | MITRE Technique | Purpose | Example Command |
+|-----------|----------------|----------|-----------------|
+| **Failed Logon Brute Force** | T1110 – Brute Force | Test correlation of multiple failed logons followed by one success | `runas /user:SecAdmin cmd` → enter wrong password 5–6×, then correct once |
+| **Encoded PowerShell Execution** | T1059 – Command and Scripting Interpreter | Generate Sysmon Event ID 1 with `-enc` flag to validate PowerShell alert | `powershell.exe -enc VwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAB0AGUAcwB0AA==` |
+| **Outbound Connection Spike** | T1071 – Application Layer Protocol | Produce multiple Sysmon Event ID 3 network events to test outbound connection detection | `1..5 | % { Test-NetConnection -ComputerName 8.8.8.8 -Port 443 }` |
+
+---
+
+### 8.2 Validation Results
+
+All three alerts from Step 7 triggered successfully after running the corresponding simulations. Each alert correlated directly with the simulated event data in Splunk.
+
+| Alert | Detection Triggered | Verification |
+|-------|----------------------|---------------|
+| **Failed Logon Brute-Force → Success** | ✅ Yes | Security Event IDs 4625 and 4624 recorded sequentially under same account |
+| **Encoded PowerShell Detected** | ✅ Yes | Sysmon Event ID 1 captured PowerShell command line containing `-enc` flag |
+| **Outbound Connection Spike** | ✅ Yes | Sysmon Event ID 3 showed repeated outbound HTTPS connections from PowerShell.exe |
+
+**Screenshots**
+- ![Failed Logon Validation](./screenshots/alert_failedlogon_validation.png)
+- ![PowerShell Validation](./screenshots/alert_powershell_validation.png)
+- ![Network Validation](./screenshots/alert_network_validation.png)
+
+---
+
+### 8.3 Analysis Summary
+
+| Objective | Verification | Outcome |
+|------------|---------------|----------|
+| Confirm detection coverage for authentication abuse | Brute-force → success alert triggered correctly | ✅ Effective |
+| Validate command-line monitoring for obfuscated PowerShell use | `-enc` command detected and correlated | ✅ Effective |
+| Identify abnormal outbound connections | Multiple Sysmon ID 3 events aggregated and alerted | ✅ Effective |
+
+---
+
+**Result:**  
+Threat simulations confirmed accurate end-to-end alerting for brute-force, encoded PowerShell, and outbound network behaviors, validating SIEM detection coverage and operational readiness.
+---
 
 
